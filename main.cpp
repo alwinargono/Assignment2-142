@@ -21,7 +21,7 @@ void swap(int *xp, int *yp)
 }
 
 // A function to implement bubble sort and get the sorted array's index
-int* bubbleSort(int arr[], int n)
+int* bubbleSortLtoH(int arr[], int n)
 {
    int i, j;
    int* ind = new int[n];
@@ -35,6 +35,30 @@ int* bubbleSort(int arr[], int n)
        for (j = 0; j < n-i-1; j++)
        {
            if (arr[j] > arr[j+1])
+           {
+        	   swap(&arr[j], &arr[j+1]);
+        	   swap(&ind[j], &ind[j+1]);
+           }
+       }
+   }
+
+    return ind;
+}
+
+int* bubbleSortHtoL(int arr[], int n)
+{
+   int i, j;
+   int* ind = new int[n];
+   for(int i = 0; i<n; i++)
+   {
+	   ind[i]=i;
+   }
+   for (i = 0; i < n-1; i++)
+   {
+       // Last i elements are already in place
+       for (j = 0; j < n-i-1; j++)
+       {
+           if (arr[j] < arr[j+1])
            {
         	   swap(&arr[j], &arr[j+1]);
         	   swap(&ind[j], &ind[j+1]);
@@ -79,7 +103,7 @@ int main() {
         }
     }
 
-    int* jobIndex = bubbleSort(Ori_Duration, jobCount);
+    int* jobIndex = bubbleSortHtoL(Ori_Duration, jobCount);
     for(int i =0; i<jobCount;i++){
     	cout<<"dur index : " << jobIndex[i] << endl;
     }
