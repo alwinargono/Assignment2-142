@@ -10,7 +10,6 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <queue>
 
 using namespace std;
 
@@ -106,7 +105,7 @@ void SortArvlLtoH(process arr[], int n)
     return;
 }*/
 
-process* SortDurLtoH(process arr[], int jobDone, int n)
+process* SortDurLtoH(process arr[], int jobDone, int n) //n= # waiting processes
 {
 	process* newArr = new process[n];
 	int c = 0;
@@ -134,7 +133,7 @@ process* SortDurLtoH(process arr[], int jobDone, int n)
    return newArr;
 }
 
-process* SortDurHtoL(process arr[], int jobDone, int n)
+process* SortDurHtoL(process arr[], int jobDone, int n) //n= # waiting processes
 {
 	process* newArr = new process[n];
 	int c = 0;
@@ -192,13 +191,13 @@ void BJF(process proc[], int count)
 	while(jobDone < count)
 	{
 		sameArvl = checkWaitingProc(proc, jobDone, time, count);
-		cout <<sameArvl<< endl;
+		cout << sameArvl<< endl;
 		if(sameArvl == 1)
 		{
 			proc[jobDone].startTime = time;
 			time+=proc[jobDone].duration;
 			proc[jobDone].endTime = time;
-			cout << proc[jobDone].id << " process is done\n";
+			cout << proc[jobDone].id << "process is done\n";
 			jobDone++;
 		}
 		else if(sameArvl == 0)
@@ -207,7 +206,7 @@ void BJF(process proc[], int count)
 			proc[jobDone].startTime = time;
 			time+=proc[jobDone].duration;
 			proc[jobDone].endTime = time;
-			cout << proc[jobDone].id << " process is done\n";
+			cout << proc[jobDone].id << "process is done\n";
 			jobDone++;
 		}
 		else
@@ -229,7 +228,7 @@ void BJF(process proc[], int count)
 			proc[jobDone].startTime = time;
 			time+=proc[jobDone].duration;
 			proc[jobDone].endTime = time;
-			cout << proc[jobDone].id << " process is done\n";
+			cout << proc[jobDone].id << "process is done\n";
 			//printStruct(proc, 0, count);
 			jobDone++;
 		}
@@ -241,46 +240,37 @@ void BJF(process proc[], int count)
 	return;
 }
 
-process* fifoArrival(process arr[], int jobDone, int n)
-{
-	process* newArr = new process[n];
-	queue<int> scheduler;
-	int c = 0;
-	for(int i = jobDone; i<jobDone+n; i++)
-		{
-			newArr[c].id = arr[i].id;
-			newArr[c].arrival = arr[i].arrival;
-			newArr[c].duration = arr[i].duration;
-			newArr[c].startTime = arr[i].startTime;
-			newArr[c].endTime = arr[i].endTime;
-			c++;
-		}
-	int i,j;
-	for (i = 0; i < n-1; i++)
-   {
-       // Last i elements are already in place
-       for (j = 0; j < n-i-1; j++)
-       {
-           if (newArr[j].arrival < newArr[j+1].arrival)
-           {
-        	   swap(&newArr[j], &newArr[j+1]);
-           }
-       }
-   }
-}
-
 void FIFO(process proc[], int count)
 {
-	int time= 0;
-	int jobDone=0;
+	int time = 0;
+	int jobDone = 0;
 	int sameArvl;
 
-	queue<int> scheduler;
+	SortArvlLtoH(proc, count);
+	time += proc[jobDone].arrival;
 
-	/*while(jobDone < count)
+	while(jobDone < count)
 	{
-		
-	}*/
+		sameArvl = checkWaitingProc(proc, jobDone, time, count);
+		cout << sameArvl<< endl;
+		if(sameArvl == 0)
+		{
+			time = proc[jobDone].arrival;
+			proc[jobDone].startTime = time;
+			time+=proc[jobDone].duration;
+			proc[jobDone].endTime = time;
+			cout << proc[jobDone].id << "process is done\n";
+			jobDone++;
+		}
+		else
+		{
+			proc[jobDone].startTime = time;
+			time+=proc[jobDone].duration;
+			proc[jobDone].endTime = time;
+			cout << proc[jobDone].id << "process is done\n";
+			jobDone++;
+		}
+	}
 	cout << "PRINT PROCESSES\n";
 	printStruct(proc, 0, count);
 	cout << "PRINT PROCESSES INFO\n";
@@ -288,12 +278,13 @@ void FIFO(process proc[], int count)
 	return;
 }
 
+
 int main() {
     int jobCount = 0;
     process procArray[100];
     string buffer;
 
-    ifstream fin("job.dat");
+    ifstream fin("/Users/michellenatasha/eclipse-workspace/assign2_142/job.dat");
     if (!fin.good()){
         cout << "File not found\n";
     }
@@ -316,16 +307,28 @@ int main() {
         }
     }
 
+    char in, choice;
+    cout << "enter n to quit\n";
+    cin >> in;
+    cout << "enter choice : ";
+    cin >>choice;
     process* copyArr = new process[jobCount];
-
+    while(in != 'n')
+    {
     copyArr = copyStruct(procArray, 0, jobCount);
-
+    if(choice == 'b')
+    {
     cout << "Running BJF\n";
     BJF(copyArr, jobCount);
     cout << "END\n";
-
-    cout << "Running FIFO\n";
-    FIFO(copyArr, jobCount);
-    cout << "END\n";
+    }
+    else if(choice == 'f')
+    {
+        cout << "Running FIFO\n";
+        FIFO(copyArr, jobCount);
+        cout << "END\n";
+        }
     return 0;
+
+    }
 }
