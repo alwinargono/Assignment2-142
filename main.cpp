@@ -197,7 +197,7 @@ void BJF(process proc[], int count)
 			proc[jobDone].startTime = time;
 			time+=proc[jobDone].duration;
 			proc[jobDone].endTime = time;
-			cout << proc[jobDone].id << "process is done\n";
+			cout << proc[jobDone].id << " process is done\n";
 			jobDone++;
 		}
 		else if(sameArvl == 0)
@@ -206,7 +206,7 @@ void BJF(process proc[], int count)
 			proc[jobDone].startTime = time;
 			time+=proc[jobDone].duration;
 			proc[jobDone].endTime = time;
-			cout << proc[jobDone].id << "process is done\n";
+			cout << proc[jobDone].id << " process is done\n";
 			jobDone++;
 		}
 		else
@@ -228,7 +228,7 @@ void BJF(process proc[], int count)
 			proc[jobDone].startTime = time;
 			time+=proc[jobDone].duration;
 			proc[jobDone].endTime = time;
-			cout << proc[jobDone].id << "process is done\n";
+			cout << proc[jobDone].id << " process is done\n";
 			//printStruct(proc, 0, count);
 			jobDone++;
 		}
@@ -239,6 +239,68 @@ void BJF(process proc[], int count)
 	printStructInfo(proc, 0, count);
 	return;
 }
+
+void SJF(process proc[], int count)
+{
+	int time = 0;
+	int jobDone = 0;
+	int sameArvl;
+
+	SortArvlLtoH(proc, count);
+	time += proc[jobDone].arrival;
+
+	while(jobDone < count)
+	{
+		sameArvl = checkWaitingProc(proc, jobDone, time, count);
+		cout << sameArvl<< endl;
+		if(sameArvl == 1)
+		{
+			proc[jobDone].startTime = time;
+			time+=proc[jobDone].duration;
+			proc[jobDone].endTime = time;
+			cout << proc[jobDone].id << " process is done\n";
+			jobDone++;
+		}
+		else if(sameArvl == 0)
+		{
+			time = proc[jobDone].arrival;
+			proc[jobDone].startTime = time;
+			time+=proc[jobDone].duration;
+			proc[jobDone].endTime = time;
+			cout << proc[jobDone].id << " process is done\n";
+			jobDone++;
+		}
+		else
+		{
+			process* temp = new process[sameArvl];
+			temp = SortDurLtoH(proc, jobDone, sameArvl);
+//			cout << "TEMP\n";
+//			printStruct(temp, 0, sameArvl);
+			int tempCount = 0;
+			for(int i = jobDone; i<jobDone+sameArvl; i++)
+				{
+					proc[i].id = temp[tempCount].id;
+					proc[i].arrival = temp[tempCount].arrival;
+					proc[i].duration = temp[tempCount].duration;
+					proc[i].startTime = temp[tempCount].startTime;
+					proc[i].endTime = temp[tempCount].endTime;
+					tempCount++;
+				}
+			proc[jobDone].startTime = time;
+			time+=proc[jobDone].duration;
+			proc[jobDone].endTime = time;
+			cout << proc[jobDone].id << " process is done\n";
+			//printStruct(proc, 0, count);
+			jobDone++;
+		}
+	}
+	cout << "PRINT PROCESSES\n";
+	printStruct(proc, 0, count);
+	cout << "PRINT PROCESSES INFO\n";
+	printStructInfo(proc, 0, count);
+	return;
+}
+
 
 void FIFO(process proc[], int count)
 {
@@ -259,7 +321,7 @@ void FIFO(process proc[], int count)
 			proc[jobDone].startTime = time;
 			time+=proc[jobDone].duration;
 			proc[jobDone].endTime = time;
-			cout << proc[jobDone].id << "process is done\n";
+			cout << proc[jobDone].id << " process is done\n";
 			jobDone++;
 		}
 		else
@@ -267,7 +329,7 @@ void FIFO(process proc[], int count)
 			proc[jobDone].startTime = time;
 			time+=proc[jobDone].duration;
 			proc[jobDone].endTime = time;
-			cout << proc[jobDone].id << "process is done\n";
+			cout << proc[jobDone].id << " process is done\n";
 			jobDone++;
 		}
 	}
@@ -284,7 +346,7 @@ int main() {
     process procArray[100];
     string buffer;
 
-    ifstream fin("/Users/michellenatasha/eclipse-workspace/assign2_142/job.dat");
+    ifstream fin("job.dat");
     if (!fin.good()){
         cout << "File not found\n";
     }
@@ -324,8 +386,8 @@ int main() {
     }
     else if(choice == 'f')
     {
-        cout << "Running FIFO\n";
-        FIFO(copyArr, jobCount);
+        cout << "Running SJF\n";
+        SJF(copyArr, jobCount);
         cout << "END\n";
         }
     return 0;
