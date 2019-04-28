@@ -5,16 +5,22 @@
 #include <sstream>
 #include <string>
 
+
 using namespace std;
 
 struct process{
     int id;
     int arrival;
     int duration;
-    int startTime = NULL;
-    int endTime = NULL;
+    int startTime;
+    int endTime;
     int tempDur;
-    bool done = 0;
+    int remaining;
+    bool running;
+    bool done;
+
+    process(): startTime(-1),endTime(-1),done(0),running(0)
+    {}
 };
 
 process* copyStruct(process arr[], int startIndex, int endIndex)
@@ -27,6 +33,7 @@ process* copyStruct(process arr[], int startIndex, int endIndex)
         newProc[i].duration = arr[i].duration;
         newProc[i].startTime = arr[i].startTime;
         newProc[i].endTime = arr[i].endTime;
+        newProc[i].remaining = arr[i].duration;
     }
     return newProc;
 }
@@ -98,22 +105,47 @@ void SortArvlLtoH(process arr[], int n)
     return;
 }
 
-/*void SortArvlHtoL(process arr[], int n)
- {
- int i, j;
- for (i = 0; i < n-1; i++)
- {
- // Last i elements are already in place
- for (j = 0; j < n-i-1; j++)
- {
- if (arr[j].arrival < arr[j+1].arrival)
- {
- swap(&arr[j], &arr[j+1]);
- }
- }
- }
- return;
- }*/
+void sortArvlnDurLtoH(process arr[], int n)
+{
+    int i, j;
+    for (i = 0; i < n-1; i++)
+    {
+        // Last i elements are already in place
+        for (j = 0; j < n-i-1; j++)
+        {
+            if (arr[j].arrival > arr[j+1].arrival)
+            {
+                swap(&arr[j], &arr[j+1]);
+            }
+            else if(arr[j].arrival == arr[j+1].arrival && arr[j].duration > arr[j+1].duration)
+            {
+                swap(&arr[j], &arr[j+1]);
+            }
+        }
+    }
+    return;
+}
+
+void sortArvlnDurHtoL(process arr[], int n)
+{
+    int i, j;
+    for (i = 0; i < n-1; i++)
+    {
+        // Last i elements are already in place
+        for (j = 0; j < n-i-1; j++)
+        {
+            if (arr[j].arrival < arr[j+1].arrival)
+            {
+                swap(&arr[j], &arr[j+1]);
+            }
+            else if(arr[j].arrival == arr[j+1].arrival && arr[j].duration > arr[j+1].duration)
+            {
+                swap(&arr[j], &arr[j+1]);
+            }
+        }
+    }
+    return;
+}
 
 process* SortDurLtoH(process arr[], int jobDone, int n) //n= # waiting processes
 {
@@ -156,8 +188,6 @@ process* SortDurHtoL(process arr[], int jobDone, int n) //n= # waiting processes
         newArr[c].endTime = arr[i].endTime;
         c++;
     }
-    //    cout << "in function\n";
-    //    printStruct(newArr, 0, n);
     int i, j;
     for (i = 0; i < n-1; i++)
     {
@@ -170,8 +200,6 @@ process* SortDurHtoL(process arr[], int jobDone, int n) //n= # waiting processes
             }
         }
     }
-    //   cout << "sorted \n";
-    //   printStruct(newArr, 0, n);
     return newArr;
 }
 
@@ -185,7 +213,6 @@ int checkWaitingProc(process array[], int jobDone, int time, int count)
             num++;
         }
     }
-    //cout << "num : " << num << endl;
     return num;
 }
 
@@ -195,7 +222,7 @@ void BJF(process proc[], int count)
     int jobDone = 0;
     int sameArvl;
 
-    SortArvlLtoH(proc, count);
+    sortArvlnDurHtoL(proc, count);
     time += proc[jobDone].arrival;
 
     while(jobDone < count)
@@ -223,8 +250,6 @@ void BJF(process proc[], int count)
         {
             process* temp = new process[sameArvl];
             temp = SortDurHtoL(proc, jobDone, sameArvl);
-            //            cout << "TEMP\n";
-            //            printStruct(temp, 0, sameArvl);
             int tempCount = 0;
             for(int i = jobDone; i<jobDone+sameArvl; i++)
             {
@@ -239,7 +264,6 @@ void BJF(process proc[], int count)
             time+=proc[jobDone].duration;
             proc[jobDone].endTime = time;
             cout << proc[jobDone].id << "process is done\n";
-            //printStruct(proc, 0, count);
             jobDone++;
         }
     }
@@ -256,7 +280,7 @@ void SJF(process proc[], int count)
     int jobDone = 0;
     int sameArvl;
 
-    SortArvlLtoH(proc, count);
+    sortArvlnDurLtoH(proc, count);
     time += proc[jobDone].arrival;
 
     while(jobDone < count)
@@ -298,7 +322,6 @@ void SJF(process proc[], int count)
             time+=proc[jobDone].duration;
             proc[jobDone].endTime = time;
             cout << proc[jobDone].id << " process is done\n";
-            //printStruct(proc, 0, count);
             jobDone++;
         }
     }
@@ -372,7 +395,7 @@ void RR(process proc[], int count)
             {
                 if(!proc[counter].done)
                 {
-                    if(proc[counter].startTime == NULL)
+                    if(proc[counter].startTime < 0)
                     {
                         proc[counter].startTime = time;
                         if(proc[0].arrival == 0)
@@ -380,8 +403,6 @@ void RR(process proc[], int count)
                             proc[0].startTime = 0;
                         }
                     }
-
-//                  cout << "prog " << counter << " is running\n";
                     time++;
                     proc[counter].tempDur--;
                     if(proc[counter].tempDur == 0)
@@ -405,55 +426,40 @@ void RR(process proc[], int count)
 
 void STCF(process proc[], int count)
 {
-    int jobDone = 0;
-    int jobDone1 =0;
-    int durations = 0;
-    int jobArvl;
-    int diff = 0;
-    int size = count - 1;
-    int aNum[size];
-    int total = 0;
+    int processDone = 0;
+    int time = 0;
+    int incoming; 
+    int finish;
 
-    SortArvlLtoH(proc, count);
-    durations += proc[jobDone].arrival;
+    sortArvlnDurLtoH(proc,count);
 
-    while(jobDone < count)
+    for(time = 0;processDone != count;time++)
     {
-        jobArvl = checkWaitingProc(proc, 0, durations, count);
-        jobDone1++;
-        if(jobArvl == 0)
+        incoming = -1;
+        int temp = INT_MAX;
+        for(int i = 0; i < count; i++)
         {
-            durations = proc[jobDone].arrival;
-            proc[jobDone].startTime = durations;
-            durations+=proc[jobDone].duration;
-            proc[jobDone].endTime = durations;
-            jobDone++;
+            if(proc[i].arrival <= time && proc[i].duration < temp && proc[i].duration > 0)
+            {
+                cout << "swap "<< endl;
+                incoming = i;
+                temp = proc[i].duration;
+            }
         }
-        else if(jobArvl > 0)
+        if(proc[incoming].startTime == -1)
         {
-            diff = proc[jobDone].duration - proc[jobDone1].arrival;
-            if(diff > proc[jobDone1].duration)
-            {
-                //durations = durations - 1;
-                durations = proc[jobDone1].arrival + proc[jobDone1].duration;
-                proc[jobDone1].startTime = proc[jobDone1].arrival;
-                proc[jobDone1].endTime = durations;
-                //aNum[proc[jobDone1].id] = diff;
-            }
-            else if(diff < proc[jobDone1].duration)
-            {
-                proc[jobDone].startTime = durations;
-                durations+=proc[jobDone].duration;
-                proc[jobDone].endTime = durations;
-                jobDone++;
-            }
-
+            proc[incoming].startTime = time;
         }
+        proc[incoming].duration--;
 
-
+        if(proc[incoming].duration == 0)
+        {
+            processDone++;
+            finish = time + 1;
+            proc[incoming].endTime = finish;
+        }
     }
-    //total = proc[count].endTime + proc[minIndex(aNum,count)].endTime; 
-    cout << "PRINT PROCESSES\n";
+    cout << "PRINT PROCESSES\n[";
     printStruct(proc, 0, count);
     cout << "PRINT PROCESSES INFO\n";
     printStructInfo(proc, 0, count);
