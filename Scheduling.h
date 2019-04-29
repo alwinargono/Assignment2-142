@@ -441,7 +441,6 @@ void STCF(process proc[], int count)
         {
             if(proc[i].arrival <= time && proc[i].duration < temp && proc[i].duration > 0)
             {
-                cout << "swap "<< endl;
                 process = i;
                 temp = proc[i].duration;
             }
