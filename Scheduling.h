@@ -428,35 +428,35 @@ void STCF(process proc[], int count)
 {
     int processDone = 0;
     int time = 0;
-    int incoming; 
+    int process; 
     int finish;
 
     sortArvlnDurLtoH(proc,count);
 
     for(time = 0;processDone != count;time++)
     {
-        incoming = -1;
+        process = -1;
         int temp = INT_MAX;
         for(int i = 0; i < count; i++)
         {
             if(proc[i].arrival <= time && proc[i].duration < temp && proc[i].duration > 0)
             {
                 cout << "swap "<< endl;
-                incoming = i;
+                process = i;
                 temp = proc[i].duration;
             }
         }
-        if(proc[incoming].startTime == -1)
+        if(proc[process].startTime == -1)
         {
-            proc[incoming].startTime = time;
+            proc[process].startTime = time;
         }
-        proc[incoming].duration--;
+        proc[process].duration--;
 
-        if(proc[incoming].duration == 0)
+        if(proc[process].duration == 0)
         {
             processDone++;
             finish = time + 1;
-            proc[incoming].endTime = finish;
+            proc[process].endTime = finish;
         }
     }
     cout << "PRINT PROCESSES\n[";
